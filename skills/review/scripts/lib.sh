@@ -21,7 +21,13 @@ find_codex() {
 # Command the user should type to log in (bare 'codex' if it's on PATH, else the absolute path).
 login_cmd() {
   if command -v codex >/dev/null 2>&1 && [ "$(command -v codex)" = "$1" ]; then echo "codex login"
-  else printf '"%s" login\n' "$1"; fi
+  else printf '%q login\n' "$1"; fi
+}
+
+# Fail with exit 2 if option $1 has no value (missing, empty, or another --flag).
+need_value() {
+  if [ $# -lt 2 ] || [ -z "$2" ]; then echo "ERROR: $1 requires a value" >&2; exit 2; fi
+  case "$2" in --*) echo "ERROR: $1 requires a value (got '$2')" >&2; exit 2;; esac
 }
 
 # Exit 3 with instructions if not logged in.

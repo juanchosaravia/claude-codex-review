@@ -11,14 +11,14 @@ TARGET="--uncommitted" TARGET_VAL="" MODEL="" EFFORT="" CWD="$PWD" FOCUS="" CONT
 while [ $# -gt 0 ]; do
   case "$1" in
     --uncommitted) TARGET="--uncommitted"; TARGET_VAL=""; shift;;
-    --base) TARGET="--base"; TARGET_VAL="$2"; shift 2;;
-    --commit) TARGET="--commit"; TARGET_VAL="$2"; shift 2;;
-    --model) MODEL="$2"; shift 2;;
-    --effort) EFFORT="$2"; shift 2;;
-    --cwd) CWD="$2"; shift 2;;
-    --focus) FOCUS="$2"; shift 2;;
-    --context) CONTEXT="$2"; shift 2;;
-    --out) OUT="$2"; shift 2;;
+    --base) need_value "$@"; TARGET="--base"; TARGET_VAL="$2"; shift 2;;
+    --commit) need_value "$@"; TARGET="--commit"; TARGET_VAL="$2"; shift 2;;
+    --model) need_value "$@"; MODEL="$2"; shift 2;;
+    --effort) need_value "$@"; EFFORT="$2"; shift 2;;
+    --cwd) need_value "$@"; CWD="$2"; shift 2;;
+    --focus) need_value "$@"; FOCUS="$2"; shift 2;;
+    --context) need_value "$@"; CONTEXT="$2"; shift 2;;
+    --out) need_value "$@"; OUT="$2"; shift 2;;
     *) echo "Unknown arg: $1" >&2; exit 2;;
   esac
 done

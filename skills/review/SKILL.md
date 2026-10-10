@@ -34,9 +34,15 @@ Run `<skill-dir>/scripts/codex-auth.sh status` before anything else. The scripts
 
 ## 2. Gather the input
 
+First create a private staging folder for the files you write. The plan and context can contain proprietary details, and `/tmp` is shared with other users on the machine:
+
+```bash
+STAGE=$(mktemp -d "${TMPDIR:-/tmp}/claude-review.XXXXXX")   # mode 700; print it and reuse the path below
+```
+
 **Plan mode.** In priority order:
 1. A file path passed in the arguments → use it.
-2. A plan written earlier **in this conversation** (plan mode or a plain "create a plan" reply) → write the most recent full plan verbatim to `/tmp/claude-plan-<timestamp>.md`. Don't summarize or improve it.
+2. A plan written earlier **in this conversation** (plan mode or a plain "create a plan" reply) → write the most recent full plan verbatim to `$STAGE/plan.md`. Don't summarize or improve it.
 3. Otherwise the newest file in `~/.claude/plans/` (`ls -t ~/.claude/plans/*.md | head -1`). Confirm with the user that it's the right plan.
 
 If no plan exists, say so and stop.
@@ -48,13 +54,15 @@ If no plan exists, say so and stop.
 
 Check `git status` / `git diff --stat` first. If the chosen target has no changes, say so and stop. The directory must be a git repo.
 
-**Both modes.** If this conversation has relevant background, write `/tmp/claude-review-context-<timestamp>.md` containing the user's original request, the plan the code implements (in code mode), and any constraints or decisions. Codex can't see this conversation. If the user named a focus area (e.g. "security", "concurrency"), pass it as `--focus` (code mode only).
+**Both modes.** If this conversation has relevant background, write `$STAGE/context.md` containing the user's original request, the plan the code implements (in code mode), and any constraints or decisions. Codex can't see this conversation. If the user named a focus area (e.g. "security", "concurrency"), pass it as `--focus` (code mode only).
 
 ## 3. Pick the model and effort
 
 If the arguments include a model slug and/or effort (`low|medium|high|xhigh|max|ultra`), use them and skip asking.
 
-Otherwise run `<skill-dir>/scripts/codex-plan.sh --list-models` and ask with **one** AskUserQuestion call:
+Otherwise run `<skill-dir>/scripts/codex-plan.sh --list-models` and ask with **one** AskUserQuestion call. If `--list-models` exits non-zero, don't make up model names. Ask only about effort, and run without `--model` so Codex uses the user's default model (say so).
+
+The AskUserQuestion call:
 - **Model**: four options. Use the first four listed models and label them with their display names (e.g. "GPT-6.1 Sol"). Put "(Recommended)" on the first one. The user can type any other slug via "Other".
 - **Effort**: `high (Recommended)`, `xhigh`, `max`, `medium`. Only offer efforts the chosen models support; `gpt-5.5` stops at `xhigh`, and `ultra` is only available on some models.
 
@@ -64,12 +72,12 @@ Run it with Bash `run_in_background: true`, because reviews can take several min
 
 ```bash
 # plan
-<skill-dir>/scripts/codex-plan.sh --plan /tmp/claude-plan-XXX.md \
-  [--context /tmp/claude-review-context-XXX.md] --model <slug> --effort <effort> --cwd "$PWD"
+<skill-dir>/scripts/codex-plan.sh --plan "$STAGE/plan.md" \
+  [--context "$STAGE/context.md"] --model <slug> --effort <effort> --cwd "$PWD"
 
 # code
 <skill-dir>/scripts/codex-code.sh [--uncommitted | --base main | --commit <sha>] \
-  [--focus "security"] [--context /tmp/claude-review-context-XXX.md] \
+  [--focus "security"] [--context "$STAGE/context.md"] \
   --model <slug> --effort <effort> --cwd "$PWD"
 ```
 
@@ -77,7 +85,7 @@ The Codex sandbox is read-only, so Codex can inspect the repo but can't change a
 
 Exit codes: `2` means bad arguments or a missing file (fix the problem and run again); `3` or a `LOGIN_REQUIRED:` line means the user needs to log in (see step 0; use the exact command printed); `1` means Codex itself failed (show the log tail; if it's an unsupported-model error, run `--list-models` and ask again).
 
-Each run gets its own folder `$TMPDIR/codex-review.XXXXXX/` with `review.md` and `codex.log`. The prompt file, which contains the plan and context, is deleted when the script exits, even if Codex fails or the run is interrupted. Delete the `/tmp/claude-plan-*` and `/tmp/claude-review-context-*` files you wrote once the review is done.
+Each run gets its own folder `$TMPDIR/codex-review.XXXXXX/` with `review.md` and `codex.log`. The prompt file, which contains the plan and context, is deleted when the script exits, even if Codex fails or the run is interrupted. When the review is done, delete the staging folder with `rm -rf "$STAGE"`.
 
 ## 5. Report back
 

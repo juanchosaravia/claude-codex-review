@@ -10,7 +10,7 @@
       "name": "codex-review",
       "description": "Get a second opinion from OpenAI Codex on Claude Code's plans and code changes, with the GPT model and reasoning effort of your choice.",
       "source": "./",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "category": "development",
       "tags": ["codex", "openai", "code-review", "plan-review"]
     }

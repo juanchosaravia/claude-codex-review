@@ -6,29 +6,37 @@ set -euo pipefail
 . "$(dirname "$0")/lib.sh"
 
 list_models() {
-  python3 - <<'PY'
-import json, os
-p = os.path.join(os.environ.get("CODEX_HOME", os.path.expanduser("~/.codex")), "models_cache.json")
+  # Prefer `codex debug models` (works on a fresh install); fall back to the local cache.
+  local codex json="" cache="${CODEX_HOME:-$HOME/.codex}/models_cache.json"
+  if codex=$(find_codex 2>/dev/null); then json=$("$codex" debug models 2>/dev/null) || json=""; fi
+  if [ -z "$json" ] && [ -f "$cache" ]; then json=$(cat "$cache"); fi
+  if [ -z "$json" ]; then
+    echo "ERROR: could not get the model list ('codex debug models' failed and $cache is missing)" >&2; exit 1
+  fi
+  printf '%s' "$json" | python3 -c '
+import json, sys
 try:
-    d = json.load(open(p))
-except Exception as e:
-    print(f"(could not read {p}: {e}; run any codex command once to populate it)"); raise SystemExit
-for m in sorted(d.get("models", []), key=lambda m: m.get("priority", 99)):
-    if m.get("visibility") != "list": continue
+    models = json.load(sys.stdin).get("models", [])
+except ValueError as e:
+    sys.exit(f"ERROR: could not parse the model list: {e}")
+listed = [m for m in models if m.get("visibility") == "list"]
+if not listed:
+    sys.exit("ERROR: the model list is empty")
+for m in sorted(listed, key=lambda m: m.get("priority", 99)):
     efforts = ",".join(r["effort"] for r in m.get("supported_reasoning_levels", []))
-    print(f'{m["slug"]}\t{m["display_name"]}\t[{efforts}]')
-PY
+    print("\t".join([m["slug"], m["display_name"], "[" + efforts + "]"]))
+'
 }
 
 PLAN="" MODEL="" EFFORT="" CWD="$PWD" CONTEXT="" OUT=""
 while [ $# -gt 0 ]; do
   case "$1" in
-    --plan) PLAN="$2"; shift 2;;
-    --model) MODEL="$2"; shift 2;;
-    --effort) EFFORT="$2"; shift 2;;
-    --cwd) CWD="$2"; shift 2;;
-    --context) CONTEXT="$2"; shift 2;;
-    --out) OUT="$2"; shift 2;;
+    --plan) need_value "$@"; PLAN="$2"; shift 2;;
+    --model) need_value "$@"; MODEL="$2"; shift 2;;
+    --effort) need_value "$@"; EFFORT="$2"; shift 2;;
+    --cwd) need_value "$@"; CWD="$2"; shift 2;;
+    --context) need_value "$@"; CONTEXT="$2"; shift 2;;
+    --out) need_value "$@"; OUT="$2"; shift 2;;
     --list-models) list_models; exit 0;;
     *) echo "Unknown arg: $1" >&2; exit 2;;
   esac

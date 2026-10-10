@@ -1,0 +1,13 @@
+{
+  "name": "codex-review",
+  "description": "Get a second opinion from OpenAI Codex on Claude Code's plans and code changes. Pick the GPT model and reasoning effort; Codex runs read-only and Claude weighs each finding.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Juan Saravia",
+    "url": "https://github.com/juanchosaravia"
+  },
+  "homepage": "https://github.com/juanchosaravia/claude-codex-review",
+  "repository": "https://github.com/juanchosaravia/claude-codex-review",
+  "license": "MIT",
+  "keywords": ["codex", "openai", "gpt", "code-review", "plan-review", "second-opinion"]
+}

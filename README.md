@@ -1,5 +1,7 @@
 # claude-codex-review
 
+[![CI](https://github.com/juanchosaravia/claude-codex-review/actions/workflows/ci.yml/badge.svg)](https://github.com/juanchosaravia/claude-codex-review/actions/workflows/ci.yml)
+
 Get a second opinion from **OpenAI Codex** on what **Claude Code** produces, without leaving Claude Code.
 
 - **Plan review**: Codex critiques a plan before any code is written. This works with plan mode and with plans Claude writes as a normal chat reply.
@@ -69,6 +71,16 @@ Each review is saved in `$TMPDIR/codex-review.XXXXXX/` as `review.md` and `codex
 | 2 | Bad arguments, a missing plan or context file, or not a git repo |
 | 3 | Codex isn't logged in |
 | 127 | Codex CLI not found |
+
+## Development
+
+The tests run the scripts against a fake `codex` (`tests/fake-codex.sh`), so they need no login or network:
+
+```bash
+bash tests/run.sh
+```
+
+CI runs them on Linux and macOS (bash 3.2), plus ShellCheck and `claude plugin validate --strict`.
 
 ## License
 

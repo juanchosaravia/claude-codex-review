@@ -63,8 +63,8 @@ If the arguments include a model slug and/or effort (`low|medium|high|xhigh|max|
 Otherwise run `<skill-dir>/scripts/codex-plan.sh --list-models` and ask with **one** AskUserQuestion call. If `--list-models` exits non-zero, don't make up model names. Ask only about effort, and run without `--model` so Codex uses the user's default model (say so).
 
 The AskUserQuestion call:
-- **Model**: four options. Use the first four listed models and label them with their display names (e.g. "GPT-6.1 Sol"). Put "(Recommended)" on the first one. The user can type any other slug via "Other".
-- **Effort**: `high (Recommended)`, `xhigh`, `max`, `medium`. Only offer efforts the chosen models support; `gpt-5.5` stops at `xhigh`, and `ultra` is only available on some models.
+- **Model**: four options. Use the first four listed models and label them with their display names exactly as printed. Put "(Recommended)" on the first one. The user can type any other slug via "Other".
+- **Effort**: `high (Recommended)`, `xhigh`, `max`, `medium`. Only offer efforts the chosen model supports; they are listed in brackets next to each model in the `--list-models` output, and the supported set differs between models.
 
 ## 4. Run the review
 

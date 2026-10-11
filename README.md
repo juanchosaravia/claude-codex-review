@@ -40,7 +40,7 @@ If you aren't logged in, the skill stops and tells you the exact login command t
 /codex-review:review code                          # review uncommitted changes
 /codex-review:review code --base main              # review the whole branch against main
 /codex-review:review code --commit abc123          # review one commit
-/codex-review:review code gpt-6.1-sol xhigh        # skip the model and effort questions
+/codex-review:review code <model> <effort>        # skip the model and effort questions
 /codex-review:review plan docs/plan.md             # review a plan file
 ```
 

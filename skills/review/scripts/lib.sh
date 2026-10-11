@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # Shared helpers for codex-review scripts. Source, don't execute.
 
 # Resolve the Codex CLI: $CODEX_BIN, then PATH (npm/brew installs), then app-bundled copies.
